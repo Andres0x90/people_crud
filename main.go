@@ -1,9 +1,8 @@
 package main
 
-import . "people_crud/infrastructure/driven_adapters/repository_adapters"
+import . "people_crud/infrastructure/endpoints/routers"
 
 func main() {
-	conn := DBConnection{}
-	conn.Connect()
-	conn.DB.AutoMigrate(&PersonModel{}, &CompanyModel{}, &SkillModel{}, &PersonSkillsModel{}, &PayrollModel{})
+	router := Router{}
+	router.Run()
 }

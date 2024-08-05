@@ -11,19 +11,8 @@ type PersonModel struct {
 	Age            int8
 	CompanyNit     string
 	Company        CompanyModel   `gorm:"foreignKey:CompanyNit; references:nit"`
-	Skills         []SkillModel   `gorm:"many2many:person_skills;"`
+	Skills         []SkillModel   `gorm:"many2many:person_skills; foreignKey:Identification; joinForeignKey: Document; references:ID;  joinReferences: SkillId;"`
 	Payrolls       []PayrollModel `gorm:"foreignKey:Document; references:Identification"`
-}
-
-type PersonSkillsModel struct {
-	Document  string      `gorm:"primaryKey"`
-	PersonRef PersonModel `gorm:"foreignKey:Document; references:Identification"`
-	SkillId   string      `gorm:"primaryKey"`
-	SkillRef  SkillModel  `gorm:"foreignKey:SkillId; references:ID"`
-}
-
-func (p *PersonSkillsModel) TableName() string {
-	return "person_skills"
 }
 
 func (p *PersonModel) TableName() string {
@@ -31,7 +20,11 @@ func (p *PersonModel) TableName() string {
 }
 
 type PersonRepositoryAdapter struct {
-	*DBConnection
+	*PostgreSQLConnection
+}
+
+func NewPersonRepositoryAdapter(db *PostgreSQLConnection) *PersonRepositoryAdapter {
+	return &PersonRepositoryAdapter{PostgreSQLConnection: db}
 }
 
 func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*Person, error) {
@@ -47,7 +40,7 @@ func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*
 		},
 	}
 
-	person.Skills = make([]Skill, 0)
+	personMapped.Skills = make([]SkillModel, 0)
 
 	for _, skill := range person.Skills {
 		personMapped.Skills = append(personMapped.Skills, SkillModel{
@@ -64,4 +57,24 @@ func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*
 	}
 
 	return person, nil
+}
+
+func (personRepository *PersonRepositoryAdapter) FindPersonById(id string) (Person, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (personRepository *PersonRepositoryAdapter) UpdatePersonById(id string) (Person, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (personRepository *PersonRepositoryAdapter) DeletePersonById(id string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (personRepository *PersonRepositoryAdapter) CountPeople() (int, error) {
+	//TODO implement me
+	panic("implement me")
 }

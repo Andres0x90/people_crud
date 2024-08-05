@@ -6,9 +6,9 @@ import (
 )
 
 type RegisterPersonUseCase struct {
-	personRepository PersonRepositoryPort
+	PersonRepository PersonRepositoryPort
 }
 
-func (useCase *RegisterPersonUseCase) Execute(person Person) (Person, error) {
-	return useCase.personRepository.CreatePerson(person)
+func (useCase *RegisterPersonUseCase) Execute(person *Person) (*Person, error) {
+	return useCase.PersonRepository.CreatePerson(person)
 }

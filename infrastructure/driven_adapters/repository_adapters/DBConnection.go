@@ -5,11 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type DBConnection struct {
+type PostgreSQLConnection struct {
 	DB *gorm.DB
 }
 
-func (DBConnection *DBConnection) Connect() error {
+func (DBConnection *PostgreSQLConnection) Connect() error {
 	var err error
 
 	if DBConnection.DB == nil {

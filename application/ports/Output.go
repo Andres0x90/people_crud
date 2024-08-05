@@ -5,7 +5,7 @@ import (
 )
 
 type PersonRepositoryPort interface {
-	CreatePerson(person Person) (Person, error)
+	CreatePerson(person *Person) (*Person, error)
 	FindPersonById(id string) (Person, error)
 	UpdatePersonById(id string) (Person, error)
 	DeletePersonById(id string) error
