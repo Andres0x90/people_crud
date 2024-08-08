@@ -10,6 +10,7 @@ import (
 
 type PersonController struct {
 	RegisterPersonUseCase ports.InputPort[domain.Person, domain.Person]
+	FindPersonUseCase     ports.InputPort[string, domain.Person]
 }
 
 func (controller *PersonController) CreatePerson(c *gin.Context) {
@@ -17,13 +18,27 @@ func (controller *PersonController) CreatePerson(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&personDTO); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	personCreated, err := controller.RegisterPersonUseCase.Execute(dtos.MapDtoToPerson(&personDTO))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, personCreated)
+}
+
+func (controller *PersonController) FindPersonById(c *gin.Context) {
+	document := c.Param("document")
+	person, err := controller.FindPersonUseCase.Execute(&document)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dtos.MapPersonToDto(person))
 }

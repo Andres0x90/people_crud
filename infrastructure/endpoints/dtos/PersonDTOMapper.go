@@ -46,3 +46,30 @@ func MapDtoToPerson(dto *PersonDTO) *domain.Person {
 
 	return &personMapped
 }
+
+func MapPersonToDto(person *domain.Person) *PersonDTO {
+	var dto PersonDTO
+	if person.Identification != "" {
+		dto = PersonDTO{
+			Type:           string(person.Type),
+			Identification: person.Identification,
+			Name:           person.Name,
+			Age:            person.Age,
+			Company: CompanyDTO{
+				NIT:         person.Company.NIT,
+				Name:        person.Company.Name,
+				Description: person.Company.Description,
+			},
+		}
+
+		for _, skill := range person.Skills {
+			dto.Skills = append(dto.Skills, SkillDTO{
+				ID:          skill.ID,
+				Name:        skill.Name,
+				Description: skill.Description,
+			})
+		}
+	}
+
+	return &dto
+}

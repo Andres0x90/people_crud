@@ -1,6 +1,7 @@
 package repository_adapters
 
 import (
+	"errors"
 	. "people_crud/domain"
 )
 
@@ -59,12 +60,44 @@ func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*
 	return person, nil
 }
 
-func (personRepository *PersonRepositoryAdapter) FindPersonById(id string) (Person, error) {
-	//TODO implement me
-	panic("implement me")
+func mapModelToPersonEntity(personModel *PersonModel) *Person {
+	personEntity := Person{
+		Type:           IDType(personModel.Type),
+		Identification: personModel.Identification,
+		Name:           personModel.Name,
+		Age:            personModel.Age,
+		Company: Company{
+			NIT:         personModel.Company.NIT,
+			Name:        personModel.Company.Name,
+			Description: personModel.Company.Description,
+		},
+	}
+
+	for _, skill := range personModel.Skills {
+		personEntity.Skills = append(personEntity.Skills, Skill{
+			ID:          skill.ID,
+			Name:        skill.Name,
+			Description: skill.Description,
+		})
+	}
+
+	return &personEntity
 }
 
-func (personRepository *PersonRepositoryAdapter) UpdatePersonById(id string) (Person, error) {
+func (personRepository *PersonRepositoryAdapter) FindPersonById(id string) (*Person, error) {
+	person := PersonModel{Company: CompanyModel{}}
+	personRepository.DB.Preload("Skills").
+		Joins("Company").
+		First(&person, id)
+
+	if person.Identification == "" {
+		return nil, errors.New("person not found")
+	}
+
+	return mapModelToPersonEntity(&person), nil
+}
+
+func (personRepository *PersonRepositoryAdapter) UpdatePersonById(id string) (*Person, error) {
 	//TODO implement me
 	panic("implement me")
 }

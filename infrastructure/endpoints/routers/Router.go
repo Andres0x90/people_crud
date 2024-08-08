@@ -21,9 +21,11 @@ func (router *Router) Run() {
 
 	PersonController := controllers.PersonController{
 		RegisterPersonUseCase: router.injector.RegisterPerson(),
+		FindPersonUseCase:     router.injector.FindPersonById(),
 	}
 
 	router.route.POST("/api/person", PersonController.CreatePerson)
+	router.route.GET("/api/person/:document", PersonController.FindPersonById)
 
 	router.route.Run(":8080")
 }

@@ -26,3 +26,9 @@ func (injector *Injector) RegisterPerson() InputPort[Person, Person] {
 		PersonRepository: injector.PersonRepository(),
 	}
 }
+
+func (injector *Injector) FindPersonById() InputPort[string, Person] {
+	return &FindPersonUseCase{
+		PersonRepository: injector.PersonRepository(),
+	}
+}
