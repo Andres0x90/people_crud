@@ -29,6 +29,18 @@ func NewPersonRepositoryAdapter(db *PostgreSQLConnection) *PersonRepositoryAdapt
 }
 
 func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*Person, error) {
+	personMapped := mapEntityToPersonModel(person)
+
+	result := personRepository.DB.Create(personMapped)
+
+	if result.Error != nil {
+		return &Person{}, result.Error
+	}
+
+	return person, nil
+}
+
+func mapEntityToPersonModel(person *Person) *PersonModel {
 	personMapped := PersonModel{
 		Type:           string(person.Type),
 		Identification: person.Identification,
@@ -50,14 +62,7 @@ func (personRepository *PersonRepositoryAdapter) CreatePerson(person *Person) (*
 			Description: skill.Description,
 		})
 	}
-
-	result := personRepository.DB.Create(&personMapped)
-
-	if result.Error != nil {
-		return &Person{}, result.Error
-	}
-
-	return person, nil
+	return &personMapped
 }
 
 func mapModelToPersonEntity(personModel *PersonModel) *Person {
@@ -84,22 +89,33 @@ func mapModelToPersonEntity(personModel *PersonModel) *Person {
 	return &personEntity
 }
 
-func (personRepository *PersonRepositoryAdapter) FindPersonById(id string) (*Person, error) {
+func (personRepository *PersonRepositoryAdapter) FindPersonById(id string, userFoundChannel chan *Person) chan *Person {
 	person := PersonModel{Company: CompanyModel{}}
 	personRepository.DB.Preload("Skills").
 		Joins("Company").
 		First(&person, id)
 
 	if person.Identification == "" {
+		userFoundChannel <- &Person{}
+		return userFoundChannel
+	}
+
+	userFoundChannel <- mapModelToPersonEntity(&person)
+
+	return userFoundChannel
+}
+
+func (personRepository *PersonRepositoryAdapter) UpdatePersonById(person *Person) (*Person, error) {
+	userFoundChannel := make(chan *Person)
+	go personRepository.FindPersonById(person.Identification, userFoundChannel)
+	personFound := <-userFoundChannel
+
+	if personFound.Identification == "" {
 		return nil, errors.New("person not found")
 	}
 
-	return mapModelToPersonEntity(&person), nil
-}
-
-func (personRepository *PersonRepositoryAdapter) UpdatePersonById(id string) (*Person, error) {
-	//TODO implement me
-	panic("implement me")
+	personRepository.DB.Updates(mapEntityToPersonModel(person))
+	return person, nil
 }
 
 func (personRepository *PersonRepositoryAdapter) DeletePersonById(id string) error {

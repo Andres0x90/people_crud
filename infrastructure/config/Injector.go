@@ -32,3 +32,9 @@ func (injector *Injector) FindPersonById() InputPort[string, Person] {
 		PersonRepository: injector.PersonRepository(),
 	}
 }
+
+func (injector *Injector) UpdatePerson() InputPort[Person, Person] {
+	return &UpdatePersonUseCase{
+		PersonRepository: injector.PersonRepository(),
+	}
+}

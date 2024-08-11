@@ -8,24 +8,34 @@ import (
 )
 
 type Router struct {
-	injector *config.Injector
-	route    *gin.Engine
+	injector         *config.Injector
+	route            *gin.Engine
+	personController *controllers.PersonController
 }
 
 func (router *Router) Run() {
 	router.injector = &config.Injector{
 		DBConn: &repository_adapters.PostgreSQLConnection{},
 	}
+
 	router.route = gin.Default()
 	router.injector.InitializeDBConnection()
-
-	PersonController := controllers.PersonController{
-		RegisterPersonUseCase: router.injector.RegisterPerson(),
-		FindPersonUseCase:     router.injector.FindPersonById(),
-	}
-
-	router.route.POST("/api/person", PersonController.CreatePerson)
-	router.route.GET("/api/person/:document", PersonController.FindPersonById)
+	router.initializeControllers()
+	router.initializeRoutes()
 
 	router.route.Run(":8080")
+}
+
+func (router *Router) initializeControllers() {
+	router.personController = &controllers.PersonController{
+		RegisterPersonUseCase: router.injector.RegisterPerson(),
+		FindPersonUseCase:     router.injector.FindPersonById(),
+		UpdatePersonUseCase:   router.injector.UpdatePerson(),
+	}
+}
+
+func (router *Router) initializeRoutes() {
+	router.route.POST("/api/person", router.personController.CreatePerson)
+	router.route.GET("/api/person/:document", router.personController.FindPersonById)
+	router.route.PUT("/api/person", router.personController.UpdatePerson)
 }
